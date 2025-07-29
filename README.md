@@ -5,6 +5,9 @@ I recommend you to use Docker desktop for better experience with databases and l
 A simple Symfony-based test API for development and experimentation.  
 Includes user creation, database handling, and basic project structure.
 
+Access to the project by enter this link in your browser:
+https://{{your_url}}/login
+
 ---
 
 ## 🚀 Getting Started
