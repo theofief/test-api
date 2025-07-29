@@ -1,0 +1,18 @@
+#controllers:
+#    resource:
+#        path: ../src/Controller/
+#        namespace: App\Controller
+#    type: attribute
+
+api:
+    path: /api
+
+# config/routes.yaml
+controllers:
+    resource: '../src/Controller/'
+    type: attribute
+
+# Charge tous les fichiers YAML du dossier routes/
+routes:
+    resource: 'routes/'
+    type: directory

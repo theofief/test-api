@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dashboard pro Users & Products - Animé</title>
+<style>
+  body {
+    background: #111;
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0; padding: 1rem;
+    overflow-x: hidden;
+  }
+
+  h1, h3 {
+    text-align: center;
+  }
+
+  /* === Tabs === */
+  .tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    justify-content: center;
+  }
+  .tab {
+    padding: 0.5rem 1.5rem;
+    cursor: pointer;
+    border-radius: 20px;
+    background: rgba(255 255 255 / 0.1);
+    color: white;
+    user-select: none;
+    font-weight: 600;
+    transition: background 0.4s ease, transform 0.25s ease;
+  }
+  .tab:hover {
+    background: rgba(255 255 255 / 0.3);
+    transform: scale(1.05);
+  }
+  .tab.active {
+    background: linear-gradient(90deg, #00c6ff, #0072ff);
+    box-shadow: 0 0 8px #00c6ffaa;
+    color: #fff;
+    transform: scale(1.1);
+  }
+
+  /* === Tab content with fade-slide === */
+  .tab-content {
+    background: rgba(255 255 255 / 0.1);
+    border-radius: 20px;
+    padding: 1rem 2rem;
+    max-height: 60vh;
+    overflow-y: auto;
+    font-family: monospace;
+    white-space: pre-wrap;
+    color: #eee;
+    position: relative;
+  }
+
+  .tab-content.enter {
+    animation: fadeSlideIn 0.5s ease forwards;
+  }
+  .tab-content.leave {
+    animation: fadeSlideOut 0.4s ease forwards;
+  }
+  .tab-content.hide {
+    display: none;
+  }
+
+  @keyframes fadeSlideIn {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes fadeSlideOut {
+    0% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+  }
+
+  /* === Buttons === */
+  button {
+    margin-top: 12px;
+    padding: 0.6rem 1.4rem;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(45deg, #0072ff, #00c6ff);
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    box-shadow: 0 0 6px #00c6ff88;
+  }
+  button:hover {
+    transform: scale(1.07);
+    box-shadow: 0 0 14px #00c6ffdd;
+  }
+  button:active {
+    transform: scale(0.96);
+    box-shadow: 0 0 8px #0099ffcc;
+  }
+
+  input, textarea {
+    width: 100%;
+    padding: 0.6rem;
+    margin-top: 0.5rem;
+    border-radius: 12px;
+    border: none;
+    font-size: 1rem;
+    background: rgba(255 255 255 / 0.1);
+    color: white;
+    outline: none;
+    transition: background 0.3s ease;
+  }
+  input:focus, textarea:focus {
+    background: rgba(255 255 255 / 0.25);
+    box-shadow: 0 0 8px #00c6ffaa;
+  }
+
+  label {
+    margin-top: 1rem;
+    display: block;
+    font-weight: 600;
+  }
+
+  /* === Popup === */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 9999;
+    animation: fadeInOverlay 0.3s ease forwards;
+  }
+  .form-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    max-width: 450px;
+    width: 90%;
+    background: rgba(30,30,30,0.95);
+    border-radius: 24px;
+    padding: 2rem 2.5rem;
+    color: white;
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 0;
+    z-index: 10000;
+    animation: popupIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    box-shadow: 0 0 25px #00c6ffcc;
+  }
+  .form-popup.leave {
+    animation: popupOut 0.25s ease forwards;
+  }
+
+  @keyframes popupIn {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.85);
+      filter: blur(2px);
+    }
+    100% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+      filter: blur(0);
+    }
+  }
+  @keyframes popupOut {
+    0% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+      filter: blur(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.8);
+      filter: blur(3px);
+    }
+  }
+  @keyframes fadeInOverlay {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* === Spinner loading === */
+  .spinner {
+    margin: 2rem auto;
+    width: 48px;
+    height: 48px;
+    border: 5px solid rgba(255 255 255 / 0.15);
+    border-top: 5px solid #00c6ff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* === List items fade-slide === */
+  .fade-slide-item {
+    opacity: 0;
+    transform: translateY(20px);
+    animation-fill-mode: forwards;
+  }
+  .fade-slide-item.enter {
+    animation-name: fadeSlideIn;
+    animation-duration: 0.4s;
+    animation-timing-function: ease;
+  }
+
+  /* === Center container === */
+  #app {
+    max-width: 900px;
+    margin: auto;
+  }
+
+  /* === Login page transition === */
+  #app.fade-out {
+    animation: fadeOutPage 0.3s forwards;
+  }
+  #app.fade-in {
+    animation: fadeInPage 0.3s forwards;
+  }
+  @keyframes fadeOutPage {
+    from {opacity: 1;}
+    to {opacity: 0;}
+  }
+  @keyframes fadeInPage {
+    from {opacity: 0;}
+    to {opacity: 1;}
+  }
+</style>
+</head>
+<body>
+  <div id="app"></div>
+
+<script>
+const app = document.getElementById('app');
+const API_BASE = '/api';
+
+// === Animation helpers ===
+
+function fadeOut(element, duration = 300) {
+  return new Promise(resolve => {
+    element.style.transition = `opacity ${duration}ms ease`;
+    element.style.opacity = 0;
+    setTimeout(() => resolve(), duration);
+  });
+}
+function fadeIn(element, duration = 300) {
+  return new Promise(resolve => {
+    element.style.transition = `opacity ${duration}ms ease`;
+    element.style.opacity = 1;
+    setTimeout(() => resolve(), duration);
+  });
+}
+
+function animateListItems(container) {
+  const items = container.querySelectorAll('.fade-slide-item');
+  items.forEach((item, i) => {
+    item.style.animationDelay = (i * 0.08) + 's';
+    item.classList.add('enter');
+  });
+}
+
+function wait(ms) {
+  return new Promise(res => setTimeout(res, ms));
+}
+
+function showError(message) {
+  alert(message);
+}
+
+// === Page fade transitions ===
+
+async function transitionTo(newRenderFunc) {
+  app.classList.add('fade-out');
+  await wait(300);
+  app.classList.remove('fade-out');
+  newRenderFunc();
+  app.classList.add('fade-in');
+  await wait(300);
+  app.classList.remove('fade-in');
+}
+
+// ==== Login ====
+
+function renderLogin() {
+  app.innerHTML = `
+    <h1>Connexion 🔐</h1>
+    <form id="login-form" style="max-width:350px;margin:auto;">
+        <input type="email" id="email" placeholder="Email" required autocomplete="username"/><br /><br />
+        <input type="password" id="password" placeholder="Mot de passe" required autocomplete="current-password"/><br /><br />
+        <button type="submit">Se connecter</button>
+    </form>
+    <p id="result" style="color:#ff5555;text-align:center;margin-top:10px;"></p>
+  `;
+
+  document.getElementById('login-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    try {
+      showLoadingSpinner();
+      const res = await fetch(API_BASE + '/login_check', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ email, password }),
+      });
+      hideLoadingSpinner();
+
+      const data = await res.json();
+
+      if (res.ok) {
+        localStorage.setItem('jwt', data.token);
+        await transitionTo(renderDashboard);
+      } else {
+        document.getElementById('result').textContent = '❌ ' + (data.error || 'Erreur inconnue');
+      }
+    } catch {
+      hideLoadingSpinner();
+      document.getElementById('result').textContent = '❌ Erreur réseau';
+    }
+  });
+}
+
+// ==== API utils ====
+
+async function apiFetch(endpoint, options = {}) {
+  const token = localStorage.getItem('jwt');
+  if (!token) throw new Error('Pas de token');
+
+  options.headers = {
+    ...options.headers,
+    Authorization: 'Bearer ' + token,
+    'Content-Type': 'application/json',
+  };
+
+  const res = await fetch(API_BASE + endpoint, options);
+
+  if (res.status === 401) {
+    localStorage.removeItem('jwt');
+    await transitionTo(renderLogin);
+    throw new Error('Non autorisé');
+  }
+
+  if (!res.ok && res.status !== 204) {
+    let errData = null;
+    try {
+      errData = await res.json();
+    } catch {}
+    throw new Error(errData?.message || 'Erreur serveur ' + res.status);
+  }
+
+  if (res.status === 204) return null;
+
+  return res.json();
+}
+
+async function apiGet(endpoint) {
+  return apiFetch(endpoint, { method: 'GET' });
+}
+async function apiDelete(endpoint) {
+  return apiFetch(endpoint, { method: 'DELETE' });
+}
+async function apiPost(endpoint, body) {
+  return apiFetch(endpoint, { method: 'POST', body: JSON.stringify(body) });
+}
+async function apiPut(endpoint, body) {
+  return apiFetch(endpoint, { method: 'PUT', body: JSON.stringify(body) });
+}
+
+// ==== Spinner ====
+
+function showLoadingSpinner() {
+  if (document.querySelector('.spinner')) return;
+  const spinner = document.createElement('div');
+  spinner.className = 'spinner';
+  spinner.id = 'loading-spinner';
+  app.appendChild(spinner);
+}
+
+function hideLoadingSpinner() {
+  const spinner = document.getElementById('loading-spinner');
+  if (spinner) spinner.remove();
+}
+
+// ==== Dashboard ====
+
+function renderDashboard() {
+  app.innerHTML = `
+    <h1>👋 Bienvenue sur ton dashboard !</h1>
+    <button id="logout-btn">Se déconnecter</button>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="users">Users</div>
+      <div class="tab" data-tab="products">Products</div>
+    </div>
+
+    <div id="tab-users" class="tab-content"></div>
+    <div id="tab-products" class="tab-content hide"></div>
+  `;
+
+  document.getElementById('logout-btn').onclick = async () => {
+    localStorage.removeItem('jwt');
+    await transitionTo(renderLogin);
+  };
+
+  const tabs = document.querySelectorAll('.tab');
+  const tabUsers = document.getElementById('tab-users');
+  const tabProducts = document.getElementById('tab-products');
+
+  let currentTab = 'users';
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', async () => {
+      if (tab.classList.contains('active')) return;
+
+      // Animation fade slide out current content
+      const currentContent = currentTab === 'users' ? tabUsers : tabProducts;
+      currentContent.classList.add('leave');
+      await wait(400);
+      currentContent.classList.add('hide');
+      currentContent.classList.remove('leave', 'enter');
+
+      // Switch active tab
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      currentTab = tab.getAttribute('data-tab');
+      const newContent = currentTab === 'users' ? tabUsers : tabProducts;
+      newContent.classList.remove('hide');
+      newContent.classList.add('enter');
+
+      if (currentTab === 'users') loadUsers();
+      else loadProducts();
+    });
+  });
+
+  loadUsers();
+}
+
+// ==== PAGINATION helper ====
+
+function renderPagination(container, hydraView, onPageChange) {
+  if (!hydraView) {
+    container.innerHTML = '';
+    return;
+  }
+
+  const prev = hydraView['hydra:previous'] || null;
+  const next = hydraView['hydra:next'] || null;
+
+  container.innerHTML = `
+    <div class="pagination">
+      <button ${!prev ? 'disabled' : ''} data-url="${prev}">← Précédent</button>
+      <button ${!next ? 'disabled' : ''} data-url="${next}">Suivant →</button>
+    </div>
+  `;
+
+  container.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const url = btn.getAttribute('data-url');
+      if (url) onPageChange(url);
+    });
+  });
+}
+
+// ==== Users Tab ====
+
+let usersData = null;
+
+async function loadUsers(url = null) {
+  const container = document.getElementById('tab-users');
+  container.innerHTML = '<div class="spinner"></div>';
+
+  try {
+    const data = url ? await fetchWithToken(url) : await apiGet('/users');
+    usersData = data;
+
+    if (!data['hydra:member'] || data['hydra:member'].length === 0) {
+      container.innerHTML = `
+        <button id="btn-add-user">+ Ajouter un utilisateur</button>
+        <p style="text-align:center; margin-top:1rem;">Aucun utilisateur trouvé.</p>
+      `;
+      document.getElementById('btn-add-user').onclick = () => showUserForm();
+      return;
+    }
+
+    container.innerHTML = `
+      <button id="btn-add-user">+ Ajouter un utilisateur</button>
+      <div id="users-list"></div>
+      <div id="users-pagination"></div>
+    `;
+
+    const usersList = document.getElementById('users-list');
+    usersList.style.display = 'flex';
+    usersList.style.flexDirection = 'column';
+
+    const currentUserToken = parseJwt(localStorage.getItem('jwt'));
+    const currentUserId = currentUserToken ? currentUserToken.id : null;
+
+    usersList.innerHTML = data['hydra:member'].map((u, idx) => `
+      <div class="fade-slide-item" style="margin-bottom: 12px; border-bottom: 1px solid #00c6ff44; padding-bottom: 8px;">
+        <strong>${u.name || ''} ${u.last_name || ''}</strong> (${u.email})<br/>
+        Roles: ${u.roles.join(', ')}<br/>
+        <button class="btn-user-edit" data-id="${u.id}">Modifier</button>
+        ${u.id === currentUserId ? '' : `<button class="btn-user-delete" data-id="${u.id}">Supprimer</button>`}
+      </div>
+    `).join('');
+
+    animateListItems(usersList);
+
+    // Delete user
+    document.querySelectorAll('.btn-user-delete').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('Confirmer la suppression de ce user ?')) return;
+        try {
+          showLoadingSpinner();
+          await apiDelete('/users/' + btn.dataset.id);
+          hideLoadingSpinner();
+          loadUsers();
+        } catch (e) {
+          hideLoadingSpinner();
+          showError(e.message);
+        }
+      });
+    });
+
+    // Edit user
+    document.querySelectorAll('.btn-user-edit').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const user = data['hydra:member'].find(u => u.id == btn.dataset.id);
+        if (user) showUserForm(user);
+      });
+    });
+
+    document.getElementById('btn-add-user').onclick = () => {
+      showUserForm();
+    };
+
+    renderPagination(document.getElementById('users-pagination'), data['hydra:view'], url => {
+      loadUsers(url);
+    });
+  } catch (e) {
+    container.textContent = 'Erreur : ' + e.message;
+  }
+}
+
+function showUserForm(user = null) {
+  const isEdit = !!user;
+
+  const html = `
+    <div class="overlay"></div>
+    <div class="form-popup">
+      <h3>${isEdit ? 'Modifier' : 'Ajouter'} un utilisateur</h3>
+      <form id="user-form">
+        <label>Email</label>
+        <input type="email" id="user-email" required value="${user ? user.email : ''}" />
+        <label>Nom</label>
+        <input type="text" id="user-name" required value="${user ? user.name : ''}" />
+        <label>Prénom</label>
+        <input type="text" id="user-last-name" required value="${user ? user.last_name : ''}" />
+        <label>Roles (séparés par une virgule)</label>
+        <input type="text" id="user-roles" required value="${user ? user.roles.join(', ') : 'ROLE_USER'}" />
+        <label>Mot de passe ${isEdit ? '(laisser vide pour ne pas changer)' : ''}</label>
+        <input type="password" id="user-password" ${isEdit ? '' : 'required'} />
+        <button type="submit">${isEdit ? 'Modifier' : 'Ajouter'}</button>
+        <button type="button" id="user-cancel">Annuler</button>
+      </form>
+    </div>
+  `;
+
+  app.insertAdjacentHTML('beforeend', html);
+
+  document.getElementById('user-cancel').onclick = () => closeForm();
+
+  document.getElementById('user-form').onsubmit = async e => {
+    e.preventDefault();
+
+    const email = document.getElementById('user-email').value.trim();
+    const name = document.getElementById('user-name').value.trim();
+    const lastName = document.getElementById('user-last-name').value.trim();
+    const roles = document.getElementById('user-roles').value.split(',').map(r => r.trim());
+    const password = document.getElementById('user-password').value.trim();
+
+    if (!email || !name || !lastName || roles.length === 0) {
+      showError('Tous les champs sauf mot de passe sont obligatoires');
+      return;
+    }
+
+    const body = { email, name, last_name: lastName, roles };
+
+    if (password) body.password = password;
+
+    try {
+      showLoadingSpinner();
+      if (isEdit) {
+        await apiPut('/users/' + user.id, body);
+      } else {
+        await apiPost('/users', body);
+      }
+      hideLoadingSpinner();
+      closeForm();
+      loadUsers();
+    } catch (e) {
+      hideLoadingSpinner();
+      showError(e.message);
+    }
+  };
+}
+
+// ==== Products Tab ====
+
+let productsData = null;
+
+async function loadProducts(url = null) {
+  const container = document.getElementById('tab-products');
+  container.innerHTML = '<div class="spinner"></div>';
+
+  try {
+    const data = url ? await fetchWithToken(url) : await apiGet('/products');
+    productsData = data;
+
+    if (!data['hydra:member'] || data['hydra:member'].length === 0) {
+      container.innerHTML = `
+        <button id="btn-add-product">+ Ajouter un produit</button>
+        <p style="text-align:center; margin-top:1rem;">Aucun produit trouvé.</p>
+      `;
+      document.getElementById('btn-add-product').onclick = () => showProductForm();
+      return;
+    }
+
+    container.innerHTML = `
+      <button id="btn-add-product">+ Ajouter un produit</button>
+      <div id="products-list" style="display:flex; flex-direction: column;"></div>
+      <div id="products-pagination"></div>
+    `;
+
+    const productsList = document.getElementById('products-list');
+
+    productsList.innerHTML = data['hydra:member'].map((p, idx) => `
+      <div class="fade-slide-item" style="margin-bottom: 12px; border-bottom: 1px solid #00c6ff44; padding-bottom: 8px;">
+        <strong>${p.name}</strong><br/>
+        ${p.description ? p.description + '<br/>' : ''}
+        Prix: ${p.price.toFixed(2)}€<br/>
+        <button class="btn-product-edit" data-id="${p.id}">Modifier</button>
+        <button class="btn-product-delete" data-id="${p.id}">Supprimer</button>
+      </div>
+    `).join('');
+
+    animateListItems(productsList);
+
+    // Delete product
+    document.querySelectorAll('.btn-product-delete').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('Confirmer la suppression de ce produit ?')) return;
+        try {
+          showLoadingSpinner();
+          await apiDelete('/products/' + btn.dataset.id);
+          hideLoadingSpinner();
+          loadProducts();
+        } catch (e) {
+          hideLoadingSpinner();
+          showError(e.message);
+        }
+      });
+    });
+
+    // Edit product
+    document.querySelectorAll('.btn-product-edit').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const product = data['hydra:member'].find(p => p.id == btn.dataset.id);
+        if (product) showProductForm(product);
+      });
+    });
+
+    document.getElementById('btn-add-product').onclick = () => {
+      showProductForm();
+    };
+
+    renderPagination(document.getElementById('products-pagination'), data['hydra:view'], url => {
+      loadProducts(url);
+    });
+  } catch (e) {
+    container.textContent = 'Erreur : ' + e.message;
+  }
+}
+
+function showProductForm(product = null) {
+  const isEdit = !!product;
+
+  const html = `
+    <div class="overlay"></div>
+    <div class="form-popup">
+      <h3>${isEdit ? 'Modifier' : 'Ajouter'} un produit</h3>
+      <form id="product-form">
+        <label>Nom</label>
+        <input type="text" id="product-name" required value="${product ? product.name : ''}" />
+        <label>Description</label>
+        <textarea id="product-description">${product ? product.description : ''}</textarea>
+        <label>Prix (€)</label>
+        <input type="number" step="0.01" min="0" id="product-price" required value="${product ? product.price : ''}" />
+        <button type="submit">${isEdit ? 'Modifier' : 'Ajouter'}</button>
+        <button type="button" id="product-cancel">Annuler</button>
+      </form>
+    </div>
+  `;
+
+  app.insertAdjacentHTML('beforeend', html);
+
+  document.getElementById('product-cancel').onclick = () => closeForm();
+
+  document.getElementById('product-form').onsubmit = async e => {
+    e.preventDefault();
+
+    const name = document.getElementById('product-name').value.trim();
+    const description = document.getElementById('product-description').value.trim();
+    const price = parseFloat(document.getElementById('product-price').value);
+
+    if (!name || isNaN(price) || price < 0) {
+      showError('Nom et prix valides requis');
+      return;
+    }
+
+    const body = { name, description, price };
+
+    try {
+      showLoadingSpinner();
+      if (isEdit) {
+        await apiPut('/products/' + product.id, body);
+      } else {
+        await apiPost('/products', body);
+      }
+      hideLoadingSpinner();
+      closeForm();
+      loadProducts();
+    } catch (e) {
+      hideLoadingSpinner();
+      showError(e.message);
+    }
+  };
+}
+
+// ==== Utils ====
+
+function closeForm() {
+  const overlay = document.querySelector('.overlay');
+  const popup = document.querySelector('.form-popup');
+
+  if (!popup || !overlay) return;
+
+  popup.classList.add('leave');
+  overlay.style.animation = 'fadeOutOverlay 0.25s ease forwards';
+
+  setTimeout(() => {
+    if (overlay) overlay.remove();
+    if (popup) popup.remove();
+  }, 250);
+}
+
+async function fetchWithToken(fullUrl) {
+  const token = localStorage.getItem('jwt');
+  if (!token) throw new Error('Pas de token');
+
+  const res = await fetch(fullUrl, {
+    headers: { Authorization: 'Bearer ' + token }
+  });
+
+  if (res.status === 401) {
+    localStorage.removeItem('jwt');
+    await transitionTo(renderLogin);
+    throw new Error('Non autorisé');
+  }
+
+  if (!res.ok) {
+    let errData = null;
+    try { errData = await res.json(); } catch {}
+    throw new Error(errData?.message || 'Erreur serveur ' + res.status);
+  }
+
+  return res.json();
+}
+
+// Decode payload JWT simple to get current user id
+function parseJwt (token) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonPayload);
+  } catch {
+    return null;
+  }
+}
+
+// ==== Init ====
+
+if (localStorage.getItem('jwt')) {
+  renderDashboard();
+} else {
+  renderLogin();
+}
+</script>
+</body>
+</html>
