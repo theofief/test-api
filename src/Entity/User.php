@@ -38,7 +38,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var string The hashed password
      */
     #[ORM\Column]
-    #[Groups(['user:write'])] // On n'affiche jamais le mot de passe
+    #[Groups(['user:write'])]
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
@@ -96,6 +96,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setPassword(string $password): static
     {
+        if (!str_starts_with($password, '$2y$')) {
+            $password = password_hash($password, PASSWORD_BCRYPT);
+        }
+
         $this->password = $password;
 
         return $this;
@@ -104,7 +108,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[\Deprecated]
     public function eraseCredentials(): void
     {
-        // @deprecated, to be supprimé sous Symfony 8
+
     }
 
     public function getName(): ?string

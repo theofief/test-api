@@ -22,8 +22,7 @@ class Product
 
     #[ORM\Column(type:"float")]
     private ?float $price = null;
-
-    // Getters and setters
+    
 
     public function getId(): ?int
     {

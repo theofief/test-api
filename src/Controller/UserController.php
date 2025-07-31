@@ -35,7 +35,6 @@ class UserController extends AbstractController
     #[Route('/api/login', name: 'user_login', methods: ['POST'])]
     public function login(): never
     {
-        // Cette méthode est un *fake endpoint* : la vraie authentification est gérée par Symfony & JWT
         throw new \Exception('Ne devrait jamais être appelé - contrôlé par le firewall.');
     }
 

@@ -38,7 +38,7 @@ security:
             provider: app_user_provider
             logout:
                 path: /logout
-                target: /login
+                target: /
 
     access_control:
       - { path: ^/api/docs, roles: PUBLIC_ACCESS }
@@ -46,4 +46,4 @@ security:
       - { path: ^/api/user/create, roles: ROLE_ADMIN }
       - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
       - { path: ^/api/register, roles: PUBLIC_ACCESS }
-      - { path: ^/api/login, roles: PUBLIC_ACCESS }
+      - { path: ^/, roles: PUBLIC_ACCESS }
